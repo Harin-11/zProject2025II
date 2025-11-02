@@ -1,8 +1,8 @@
 package com.example.model;
 
-
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,6 +18,7 @@ public class Autor {
     private String nombre;
     
     @OneToMany(mappedBy = "autor")
+    @JsonIgnoreProperties("autor")
     private List<Libro> libros;
 
 	public Autor() {

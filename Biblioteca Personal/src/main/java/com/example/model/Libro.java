@@ -1,6 +1,9 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,12 +18,14 @@ public class Libro {
     private String titulo;
     private Integer añoPublicacion;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "autor_id")
+    @JsonIgnoreProperties("libros")
     private Autor autor;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "categoria_id")
+    @JsonIgnoreProperties("libros")
     private Categoria categoria;
 
 	public Libro() {

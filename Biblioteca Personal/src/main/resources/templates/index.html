@@ -349,11 +349,15 @@
                 const response = await fetch(`${API_BASE}/libros`);
                 if (response.ok) {
                     libros = await response.json();
+                    console.log('Libros cargados:', libros);
                     mostrarLibros();
                 } else {
-                    mostrarAlerta('Error al cargar los libros', 'danger');
+                    const errorText = await response.text();
+                    console.error('Error al cargar libros:', response.status, errorText);
+                    mostrarAlerta('Error al cargar los libros: ' + errorText, 'danger');
                 }
             } catch (error) {
+                console.error('Error de conexión al cargar libros:', error);
                 mostrarAlerta('Error de conexión: ' + error.message, 'danger');
             } finally {
                 document.getElementById('loadingDiv').style.display = 'none';
@@ -402,10 +406,14 @@
                 const response = await fetch(`${API_BASE}/api/autores`);
                 if (response.ok) {
                     autores = await response.json();
+                    console.log('Autores cargados:', autores);
                     actualizarSelectAutor();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error al cargar autores:', response.status, errorText);
                 }
             } catch (error) {
-                console.error('Error al cargar autores:', error);
+                console.error('Error de conexión al cargar autores:', error);
             }
         }
 
@@ -415,10 +423,14 @@
                 const response = await fetch(`${API_BASE}/api/categorias`);
                 if (response.ok) {
                     categorias = await response.json();
+                    console.log('Categorías cargadas:', categorias);
                     actualizarSelectCategoria();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error al cargar categorías:', response.status, errorText);
                 }
             } catch (error) {
-                console.error('Error al cargar categorías:', error);
+                console.error('Error de conexión al cargar categorías:', error);
             }
         }
 
@@ -437,30 +449,40 @@
         }
 
         // Abrir modal para nuevo libro
-        function abrirModalNuevo() {
+        async function abrirModalNuevo() {
             libroEditando = null;
             document.getElementById('modalTitle').textContent = 'Agregar Libro';
             document.getElementById('libroForm').reset();
             document.getElementById('libroId').value = '';
+            // Recargar autores y categorías cuando se abre el modal
+            await cargarAutores();
+            await cargarCategorias();
         }
 
         // Editar libro
-        function editarLibro(id) {
+        async function editarLibro(id) {
             libroEditando = libros.find(l => l.id === id);
             if (!libroEditando) return;
+
+            // Recargar autores y categorías antes de abrir el modal
+            await cargarAutores();
+            await cargarCategorias();
 
             document.getElementById('modalTitle').textContent = 'Editar Libro';
             document.getElementById('libroId').value = libroEditando.id;
             document.getElementById('titulo').value = libroEditando.titulo || '';
             document.getElementById('añoPublicacion').value = libroEditando.añoPublicacion || '';
             
-            // Seleccionar autor y categoría
-            if (libroEditando.autor) {
-                document.getElementById('autor').value = libroEditando.autor.id;
-            }
-            if (libroEditando.categoria) {
-                document.getElementById('categoria').value = libroEditando.categoria.id;
-            }
+            // Esperar un momento para que se actualicen los selects antes de seleccionar
+            setTimeout(() => {
+                // Seleccionar autor y categoría
+                if (libroEditando.autor) {
+                    document.getElementById('autor').value = libroEditando.autor.id;
+                }
+                if (libroEditando.categoria) {
+                    document.getElementById('categoria').value = libroEditando.categoria.id;
+                }
+            }, 100);
 
             const modal = new bootstrap.Modal(document.getElementById('libroModal'));
             modal.show();
