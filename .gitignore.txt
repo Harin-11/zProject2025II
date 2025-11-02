@@ -1,39 +1,20 @@
-# ===== ARCHIVOS GENERALES =====
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-# ===== ECLIPSE / STS =====
+# Archivos y carpetas de Eclipse
 .metadata/
-.apt_generated
 .classpath
-.factorypath
 .project
 .settings/
-.springBeans
-.sts4-cache
+.factorypath
 
-# ===== INTELLIJ IDEA =====
-.idea/
-*.iws
-*.iml
-*.ipr
+# Archivos de compilación de Java/Maven
+target/
+*.class
+*.log
 
-# ===== NETBEANS =====
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-# ===== VISUAL STUDIO CODE =====
-.vscode/
-
-# ===== SISTEMA =====
+# Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Otros
+*.iml
+.idea/
+
