@@ -1,0 +1,39 @@
+# ===== ARCHIVOS GENERALES =====
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ===== ECLIPSE / STS =====
+.metadata/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# ===== INTELLIJ IDEA =====
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# ===== NETBEANS =====
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===== VISUAL STUDIO CODE =====
+.vscode/
+
+# ===== SISTEMA =====
+.DS_Store
+Thumbs.db
