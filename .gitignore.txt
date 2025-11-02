@@ -1,0 +1,20 @@
+# Archivos y carpetas de Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+.factorypath
+
+# Archivos de compilación de Java/Maven
+target/
+*.class
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Otros
+*.iml
+.idea/
+
