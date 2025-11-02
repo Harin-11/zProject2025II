@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
 @RequestMapping("/libros")
-public class LibroController extends LibroRepository {
+@CrossOrigin(origins = "*")
+public class LibroController {
     private final LibroService libroService;
 
     public LibroController(LibroService libroService) {

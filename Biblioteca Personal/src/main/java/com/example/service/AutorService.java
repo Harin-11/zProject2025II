@@ -5,8 +5,9 @@ import com.example.repository.AutorRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+
 @Service
-public class AutorService implements AutorRepository {
+public class AutorService {
     private final AutorRepository autorRepository;
 
     public AutorService(AutorRepository autorRepository) {
@@ -24,6 +25,7 @@ public class AutorService implements AutorRepository {
     public Autor guardarAutor(Autor autor) {
         return autorRepository.save(autor);
     }
+    
     public Autor actualizarAutor(Long id, Autor autorActualizado) {
         return autorRepository.findById(id)
                 .map(autor -> {
@@ -32,33 +34,8 @@ public class AutorService implements AutorRepository {
                 })
                 .orElse(null);
     }
+    
     public void eliminarAutor(Long id) {
         autorRepository.deleteById(id);
     }
-}
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

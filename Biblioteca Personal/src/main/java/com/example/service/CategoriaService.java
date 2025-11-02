@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CategoriaService implements CategoriaRepository {
+public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
