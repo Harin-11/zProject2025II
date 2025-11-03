@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Personal - Gestión de Libros</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin: 0 auto;
+            max-width: 1400px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #3a5dd1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 115, 223, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            border: none;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            border: none;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            border: none;
+            color: #333;
+        }
+
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fc;
+            transform: scale(1.01);
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e3e6f0;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--secondary-color);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="bi bi-book"></i> Biblioteca Personal</h1>
+            <p>Gestión completa de tu colección de libros</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="bi bi-list-ul"></i> Lista de Libros</h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#libroModal" onclick="abrirModalNuevo()">
+                <i class="bi bi-plus-circle"></i> Agregar Libro
+            </button>
+        </div>
+
+        <div id="loadingDiv" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3">Cargando libros...</p>
+        </div>
+
+        <div id="tableContainer" style="display: none;">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Año Publicación</th>
+                            <th>Autor</th>
+                            <th>Categoría</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="librosTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="bi bi-inbox"></i>
+            <h3>No hay libros registrados</h3>
+            <p>Comienza agregando tu primer libro a la biblioteca</p>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar/Editar Libro -->
+    <div class="modal fade" id="libroModal" tabindex="-1" aria-labelledby="libroModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="libroModalLabel">
+                        <i class="bi bi-book"></i> <span id="modalTitle">Agregar Libro</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="libroForm">
+                        <input type="hidden" id="libroId" name="id">
+                        
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label"><i class="bi bi-type"></i> Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="añoPublicacion" class="form-label"><i class="bi bi-calendar"></i> Año de Publicación *</label>
+                            <input type="number" class="form-control" id="añoPublicacion" name="añoPublicacion" min="1000" max="2100" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="autor" class="form-label"><i class="bi bi-person"></i> Autor *</label>
+                            <select class="form-select" id="autor" name="autor" required>
+                                <option value="">Seleccione un autor</option>
+                            </select>
+                            <small class="text-muted">
+                                <a href="#" onclick="abrirModalAutor(); return false;">¿No encuentra el autor? Agregar nuevo</a>
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label"><i class="bi bi-tag"></i> Categoría *</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option value="">Seleccione una categoría</option>
+                            </select>
+                            <small class="text-muted">
+                                <a href="#" onclick="abrirModalCategoria(); return false;">¿No encuentra la categoría? Agregar nueva</a>
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar Autor -->
+    <div class="modal fade" id="autorModal" tabindex="-1" aria-labelledby="autorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-plus"></i> Agregar Autor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="autorForm">
+                        <div class="mb-3">
+                            <label for="autorNombre" class="form-label">Nombre del Autor *</label>
+                            <input type="text" class="form-control" id="autorNombre" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Guardar Autor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar Categoría -->
+    <div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-tag-fill"></i> Agregar Categoría</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoriaForm">
+                        <div class="mb-3">
+                            <label for="categoriaNombre" class="form-label">Nombre de la Categoría *</label>
+                            <input type="text" class="form-control" id="categoriaNombre" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Guardar Categoría</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        console.log('API_BASE:', API_BASE);
+        
+        // Variables globales
+        let libros = [];
+        let autores = [];
+        let categorias = [];
+        let libroEditando = null;
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando aplicación...');
+            cargarAutores();
+            cargarCategorias();
+            cargarLibros();
+            configurarFormularios();
+        });
+
+        // Configurar eventos de formularios
+        function configurarFormularios() {
+            document.getElementById('libroForm').addEventListener('submit', guardarLibro);
+            document.getElementById('autorForm').addEventListener('submit', guardarAutor);
+            document.getElementById('categoriaForm').addEventListener('submit', guardarCategoria);
+        }
+
+        // Cargar libros
+        async function cargarLibros() {
+            try {
+                console.log('Intentando cargar libros desde:', `${API_BASE}/libros`);
+                const response = await fetch(`${API_BASE}/libros`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta recibida:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Libros cargados (raw):', data);
+                    libros = Array.isArray(data) ? data : [];
+                    console.log('Total de libros:', libros.length);
+                    mostrarLibros();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error HTTP al cargar libros:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar los libros (${response.status}): ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error de conexión al cargar libros:', error);
+                mostrarAlerta('Error de conexión al cargar libros: ' + error.message, 'danger');
+            } finally {
+                const loadingDiv = document.getElementById('loadingDiv');
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
+            }
+        }
+
+        // Mostrar libros en la tabla
+        function mostrarLibros() {
+            const tbody = document.getElementById('librosTableBody');
+            const tableContainer = document.getElementById('tableContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            console.log('Mostrando libros. Cantidad:', libros.length);
+
+            if (libros.length === 0) {
+                console.log('No hay libros para mostrar');
+                if (tableContainer) tableContainer.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'block';
+                return;
+            }
+
+            if (tableContainer) tableContainer.style.display = 'block';
+            if (emptyState) emptyState.style.display = 'none';
+
+            if (!tbody) {
+                console.error('No se encontró el elemento librosTableBody');
+                return;
+            }
+
+            tbody.innerHTML = libros.map(libro => {
+                console.log('Procesando libro:', libro);
+                // Manejar el campo añoPublicacion (puede venir con diferentes nombres debido a serialización)
+                const año = libro.añoPublicacion !== undefined ? libro.añoPublicacion : '-';
+                const autorNombre = libro.autor && libro.autor.nombre ? libro.autor.nombre : 'Sin autor';
+                const categoriaNombre = libro.categoria && libro.categoria.nombre ? libro.categoria.nombre : 'Sin categoría';
+                
+                return `
+                <tr>
+                    <td><strong>#${libro.id}</strong></td>
+                    <td>${libro.titulo || '-'}</td>
+                    <td><span class="badge bg-info">${año}</span></td>
+                    <td>${autorNombre}</td>
+                    <td>${categoriaNombre}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning btn-sm" onclick="editarLibro(${libro.id})" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarLibro(${libro.id})" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+            
+            console.log('Tabla actualizada con', libros.length, 'libros');
+        }
+
+        // Cargar autores
+        async function cargarAutores() {
+            try {
+                console.log('Intentando cargar autores desde:', `${API_BASE}/api/autores`);
+                const response = await fetch(`${API_BASE}/api/autores`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta autores:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    autores = Array.isArray(data) ? data : [];
+                    console.log('Autores cargados:', autores);
+                    actualizarSelectAutor();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error al cargar autores:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar autores (${response.status})`, 'warning');
+                }
+            } catch (error) {
+                console.error('Error de conexión al cargar autores:', error);
+                mostrarAlerta('Error de conexión al cargar autores: ' + error.message, 'warning');
+            }
+        }
+
+        // Cargar categorías
+        async function cargarCategorias() {
+            try {
+                console.log('Intentando cargar categorías desde:', `${API_BASE}/api/categorias`);
+                const response = await fetch(`${API_BASE}/api/categorias`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta categorías:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    categorias = Array.isArray(data) ? data : [];
+                    console.log('Categorías cargadas:', categorias);
+                    actualizarSelectCategoria();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error al cargar categorías:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar categorías (${response.status})`, 'warning');
+                }
+            } catch (error) {
+                console.error('Error de conexión al cargar categorías:', error);
+                mostrarAlerta('Error de conexión al cargar categorías: ' + error.message, 'warning');
+            }
+        }
+
+        // Actualizar select de autores
+        function actualizarSelectAutor() {
+            const select = document.getElementById('autor');
+            if (!select) {
+                console.warn('Select de autor no encontrado');
+                return;
+            }
+            console.log('Actualizando select de autores con', autores.length, 'autores');
+            select.innerHTML = '<option value="">Seleccione un autor</option>' +
+                autores.map(autor => `<option value="${autor.id}">${autor.nombre || 'Sin nombre'}</option>`).join('');
+        }
+
+        // Actualizar select de categorías
+        function actualizarSelectCategoria() {
+            const select = document.getElementById('categoria');
+            if (!select) {
+                console.warn('Select de categoría no encontrado');
+                return;
+            }
+            console.log('Actualizando select de categorías con', categorias.length, 'categorías');
+            select.innerHTML = '<option value="">Seleccione una categoría</option>' +
+                categorias.map(cat => `<option value="${cat.id}">${cat.nombre || 'Sin nombre'}</option>`).join('');
+        }
+
+        // Abrir modal para nuevo libro
+        async function abrirModalNuevo() {
+            libroEditando = null;
+            document.getElementById('modalTitle').textContent = 'Agregar Libro';
+            document.getElementById('libroForm').reset();
+            document.getElementById('libroId').value = '';
+            // Recargar autores y categorías cuando se abre el modal
+            await cargarAutores();
+            await cargarCategorias();
+        }
+
+        // Editar libro
+        async function editarLibro(id) {
+            libroEditando = libros.find(l => l.id === id);
+            if (!libroEditando) return;
+
+            // Recargar autores y categorías antes de abrir el modal
+            await cargarAutores();
+            await cargarCategorias();
+
+            document.getElementById('modalTitle').textContent = 'Editar Libro';
+            document.getElementById('libroId').value = libroEditando.id;
+            document.getElementById('titulo').value = libroEditando.titulo || '';
+            document.getElementById('añoPublicacion').value = libroEditando.añoPublicacion || '';
+            
+            // Esperar un momento para que se actualicen los selects antes de seleccionar
+            setTimeout(() => {
+                // Seleccionar autor y categoría
+                if (libroEditando.autor) {
+                    document.getElementById('autor').value = libroEditando.autor.id;
+                }
+                if (libroEditando.categoria) {
+                    document.getElementById('categoria').value = libroEditando.categoria.id;
+                }
+            }, 100);
+
+            const modal = new bootstrap.Modal(document.getElementById('libroModal'));
+            modal.show();
+        }
+
+        // Guardar libro (crear o actualizar)
+        async function guardarLibro(e) {
+            e.preventDefault();
+            
+            const libroData = {
+                titulo: document.getElementById('titulo').value,
+                añoPublicacion: parseInt(document.getElementById('añoPublicacion').value),
+                autor: { id: parseInt(document.getElementById('autor').value) },
+                categoria: { id: parseInt(document.getElementById('categoria').value) }
+            };
+
+            const id = document.getElementById('libroId').value;
+            const url = id ? `${API_BASE}/libros/${id}` : `${API_BASE}/libros`;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(libroData)
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(`Libro ${id ? 'actualizado' : 'agregado'} exitosamente`, 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('libroModal'));
+                    modal.hide();
+                    cargarLibros();
+                } else {
+                    const error = await response.text();
+                    mostrarAlerta('Error: ' + error, 'danger');
+                }
+            } catch (error) {
+                mostrarAlerta('Error de conexión: ' + error.message, 'danger');
+            }
+        }
+
+        // Eliminar libro
+        async function eliminarLibro(id) {
+            const libro = libros.find(l => l.id === id);
+            if (!confirm(`¿Está seguro de eliminar el libro "${libro.titulo}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/libros/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta('Libro eliminado exitosamente', 'success');
+                    cargarLibros();
+                } else {
+                    mostrarAlerta('Error al eliminar el libro', 'danger');
+                }
+            } catch (error) {
+                mostrarAlerta('Error de conexión: ' + error.message, 'danger');
+            }
+        }
+
+        // Abrir modal para agregar autor
+        function abrirModalAutor() {
+            const libroModal = bootstrap.Modal.getInstance(document.getElementById('libroModal'));
+            libroModal.hide();
+            
+            setTimeout(() => {
+                const autorModal = new bootstrap.Modal(document.getElementById('autorModal'));
+                autorModal.show();
+            }, 300);
+        }
+
+        // Guardar autor
+        async function guardarAutor(e) {
+            e.preventDefault();
+            
+            const autorData = {
+                nombre: document.getElementById('autorNombre').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/autores`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(autorData)
+                });
+
+                if (response.ok) {
+                    const nuevoAutor = await response.json();
+                    mostrarAlerta('Autor agregado exitosamente', 'success');
+                    await cargarAutores();
+                    
+                    // Actualizar el select y seleccionar el nuevo autor
+                    setTimeout(() => {
+                        document.getElementById('autor').value = nuevoAutor.id;
+                    }, 100);
+
+                    const autorModal = bootstrap.Modal.getInstance(document.getElementById('autorModal'));
+                    autorModal.hide();
+                    
+                    // Volver al modal de libro
+                    setTimeout(() => {
+                        const libroModal = new bootstrap.Modal(document.getElementById('libroModal'));
+                        libroModal.show();
+                    }, 300);
+                } else {
+                    mostrarAlerta('Error al agregar el autor', 'danger');
+                }
+            } catch (error) {
+                mostrarAlerta('Error de conexión: ' + error.message, 'danger');
+            }
+        }
+
+        // Abrir modal para agregar categoría
+        function abrirModalCategoria() {
+            const libroModal = bootstrap.Modal.getInstance(document.getElementById('libroModal'));
+            libroModal.hide();
+            
+            setTimeout(() => {
+                const categoriaModal = new bootstrap.Modal(document.getElementById('categoriaModal'));
+                categoriaModal.show();
+            }, 300);
+        }
+
+        // Guardar categoría
+        async function guardarCategoria(e) {
+            e.preventDefault();
+            
+            const categoriaData = {
+                nombre: document.getElementById('categoriaNombre').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/categorias`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(categoriaData)
+                });
+
+                if (response.ok) {
+                    const nuevaCategoria = await response.json();
+                    mostrarAlerta('Categoría agregada exitosamente', 'success');
+                    await cargarCategorias();
+                    
+                    // Actualizar el select y seleccionar la nueva categoría
+                    setTimeout(() => {
+                        document.getElementById('categoria').value = nuevaCategoria.id;
+                    }, 100);
+
+                    const categoriaModal = bootstrap.Modal.getInstance(document.getElementById('categoriaModal'));
+                    categoriaModal.hide();
+                    
+                    // Volver al modal de libro
+                    setTimeout(() => {
+                        const libroModal = new bootstrap.Modal(document.getElementById('libroModal'));
+                        libroModal.show();
+                    }, 300);
+                } else {
+                    mostrarAlerta('Error al agregar la categoría', 'danger');
+                }
+            } catch (error) {
+                mostrarAlerta('Error de conexión: ' + error.message, 'danger');
+            }
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(mensaje, tipo) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${tipo === 'success' ? 'check-circle' : tipo === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHTML;
+            
+            // Auto-cerrar después de 5 segundos
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
