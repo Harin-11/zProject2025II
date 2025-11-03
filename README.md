@@ -77,7 +77,7 @@ CREATE DATABASE bibliotecadb;
 
 Actualizar el archivo `src/main/resources/application.properties` con las siguientes propiedades:
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/biblioteca
+spring.datasource.url=jdbc:postgresql://localhost:5432/bibliotecadb
 spring.datasource.username=postgres
 spring.datasource.password=tu_contraseña
 spring.jpa.hibernate.ddl-auto=update
