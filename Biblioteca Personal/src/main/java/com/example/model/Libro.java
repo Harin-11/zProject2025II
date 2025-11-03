@@ -1,7 +1,9 @@
 package com.example.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -9,22 +11,29 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "libro")
 public class Libro {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(name = "titulo", nullable = false, length = 150)
     private String titulo;
+    
+    @Column(name = "año_publicacion")
+    @JsonProperty("añoPublicacion")
     private Integer añoPublicacion;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "autor_id")
+    @JoinColumn(name = "id_autor", referencedColumnName = "id")
     @JsonIgnoreProperties("libros")
     private Autor autor;
     
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "categoria_id")
+    @JoinColumn(name = "id_categoria", referencedColumnName = "id")
     @JsonIgnoreProperties("libros")
     private Categoria categoria;
 

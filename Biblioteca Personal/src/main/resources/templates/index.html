@@ -321,6 +321,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_BASE = window.location.origin;
+        console.log('API_BASE:', API_BASE);
         
         // Variables globales
         let libros = [];
@@ -330,6 +331,7 @@
 
         // Inicializar la aplicación
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando aplicación...');
             cargarAutores();
             cargarCategorias();
             cargarLibros();
@@ -346,21 +348,34 @@
         // Cargar libros
         async function cargarLibros() {
             try {
-                const response = await fetch(`${API_BASE}/libros`);
+                console.log('Intentando cargar libros desde:', `${API_BASE}/libros`);
+                const response = await fetch(`${API_BASE}/libros`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta recibida:', response.status, response.statusText);
+                
                 if (response.ok) {
-                    libros = await response.json();
-                    console.log('Libros cargados:', libros);
+                    const data = await response.json();
+                    console.log('Libros cargados (raw):', data);
+                    libros = Array.isArray(data) ? data : [];
+                    console.log('Total de libros:', libros.length);
                     mostrarLibros();
                 } else {
                     const errorText = await response.text();
-                    console.error('Error al cargar libros:', response.status, errorText);
-                    mostrarAlerta('Error al cargar los libros: ' + errorText, 'danger');
+                    console.error('Error HTTP al cargar libros:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar los libros (${response.status}): ${errorText}`, 'danger');
                 }
             } catch (error) {
                 console.error('Error de conexión al cargar libros:', error);
-                mostrarAlerta('Error de conexión: ' + error.message, 'danger');
+                mostrarAlerta('Error de conexión al cargar libros: ' + error.message, 'danger');
             } finally {
-                document.getElementById('loadingDiv').style.display = 'none';
+                const loadingDiv = document.getElementById('loadingDiv');
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
             }
         }
 
@@ -370,22 +385,37 @@
             const tableContainer = document.getElementById('tableContainer');
             const emptyState = document.getElementById('emptyState');
 
+            console.log('Mostrando libros. Cantidad:', libros.length);
+
             if (libros.length === 0) {
-                tableContainer.style.display = 'none';
-                emptyState.style.display = 'block';
+                console.log('No hay libros para mostrar');
+                if (tableContainer) tableContainer.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'block';
                 return;
             }
 
-            tableContainer.style.display = 'block';
-            emptyState.style.display = 'none';
+            if (tableContainer) tableContainer.style.display = 'block';
+            if (emptyState) emptyState.style.display = 'none';
 
-            tbody.innerHTML = libros.map(libro => `
+            if (!tbody) {
+                console.error('No se encontró el elemento librosTableBody');
+                return;
+            }
+
+            tbody.innerHTML = libros.map(libro => {
+                console.log('Procesando libro:', libro);
+                // Manejar el campo añoPublicacion (puede venir con diferentes nombres debido a serialización)
+                const año = libro.añoPublicacion !== undefined ? libro.añoPublicacion : '-';
+                const autorNombre = libro.autor && libro.autor.nombre ? libro.autor.nombre : 'Sin autor';
+                const categoriaNombre = libro.categoria && libro.categoria.nombre ? libro.categoria.nombre : 'Sin categoría';
+                
+                return `
                 <tr>
                     <td><strong>#${libro.id}</strong></td>
                     <td>${libro.titulo || '-'}</td>
-                    <td><span class="badge bg-info">${libro.añoPublicacion || '-'}</span></td>
-                    <td>${libro.autor ? libro.autor.nombre : '<span class="text-muted">Sin autor</span>'}</td>
-                    <td>${libro.categoria ? libro.categoria.nombre : '<span class="text-muted">Sin categoría</span>'}</td>
+                    <td><span class="badge bg-info">${año}</span></td>
+                    <td>${autorNombre}</td>
+                    <td>${categoriaNombre}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-warning btn-sm" onclick="editarLibro(${libro.id})" title="Editar">
@@ -397,55 +427,90 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
+            
+            console.log('Tabla actualizada con', libros.length, 'libros');
         }
 
         // Cargar autores
         async function cargarAutores() {
             try {
-                const response = await fetch(`${API_BASE}/api/autores`);
+                console.log('Intentando cargar autores desde:', `${API_BASE}/api/autores`);
+                const response = await fetch(`${API_BASE}/api/autores`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta autores:', response.status, response.statusText);
+                
                 if (response.ok) {
-                    autores = await response.json();
+                    const data = await response.json();
+                    autores = Array.isArray(data) ? data : [];
                     console.log('Autores cargados:', autores);
                     actualizarSelectAutor();
                 } else {
                     const errorText = await response.text();
                     console.error('Error al cargar autores:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar autores (${response.status})`, 'warning');
                 }
             } catch (error) {
                 console.error('Error de conexión al cargar autores:', error);
+                mostrarAlerta('Error de conexión al cargar autores: ' + error.message, 'warning');
             }
         }
 
         // Cargar categorías
         async function cargarCategorias() {
             try {
-                const response = await fetch(`${API_BASE}/api/categorias`);
+                console.log('Intentando cargar categorías desde:', `${API_BASE}/api/categorias`);
+                const response = await fetch(`${API_BASE}/api/categorias`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                console.log('Respuesta categorías:', response.status, response.statusText);
+                
                 if (response.ok) {
-                    categorias = await response.json();
+                    const data = await response.json();
+                    categorias = Array.isArray(data) ? data : [];
                     console.log('Categorías cargadas:', categorias);
                     actualizarSelectCategoria();
                 } else {
                     const errorText = await response.text();
                     console.error('Error al cargar categorías:', response.status, errorText);
+                    mostrarAlerta(`Error al cargar categorías (${response.status})`, 'warning');
                 }
             } catch (error) {
                 console.error('Error de conexión al cargar categorías:', error);
+                mostrarAlerta('Error de conexión al cargar categorías: ' + error.message, 'warning');
             }
         }
 
         // Actualizar select de autores
         function actualizarSelectAutor() {
             const select = document.getElementById('autor');
+            if (!select) {
+                console.warn('Select de autor no encontrado');
+                return;
+            }
+            console.log('Actualizando select de autores con', autores.length, 'autores');
             select.innerHTML = '<option value="">Seleccione un autor</option>' +
-                autores.map(autor => `<option value="${autor.id}">${autor.nombre}</option>`).join('');
+                autores.map(autor => `<option value="${autor.id}">${autor.nombre || 'Sin nombre'}</option>`).join('');
         }
 
         // Actualizar select de categorías
         function actualizarSelectCategoria() {
             const select = document.getElementById('categoria');
+            if (!select) {
+                console.warn('Select de categoría no encontrado');
+                return;
+            }
+            console.log('Actualizando select de categorías con', categorias.length, 'categorías');
             select.innerHTML = '<option value="">Seleccione una categoría</option>' +
-                categorias.map(cat => `<option value="${cat.id}">${cat.nombre}</option>`).join('');
+                categorias.map(cat => `<option value="${cat.id}">${cat.nombre || 'Sin nombre'}</option>`).join('');
         }
 
         // Abrir modal para nuevo libro
